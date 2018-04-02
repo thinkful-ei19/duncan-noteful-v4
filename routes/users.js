@@ -36,6 +36,8 @@ router.post('/users', (req, res, next) => {
     return next(err);
   }
 
+  
+
   return User.hashPassword(password)
     .then(digest => {
       const newUser = {

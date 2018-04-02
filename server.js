@@ -18,13 +18,13 @@ app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
   skip: () => process.env.NODE_ENV === 'test'
 }));
 
-// Create a static webserver
+// Utilize the Express static webserver, passing in the directory name
 app.use(express.static('public'));
 
-// Parse request body
+// Utilize the Express `.json()` body parser
 app.use(express.json());
 
-// Mount router on "/api"
+// Mount routers
 app.use('/api', notesRouter);
 app.use('/api', foldersRouter);
 app.use('/api', tagsRouter);

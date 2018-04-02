@@ -1,2 +1,2 @@
-Listful App
+Noteful App
 ============================

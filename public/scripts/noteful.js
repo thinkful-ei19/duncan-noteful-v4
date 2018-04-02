@@ -140,7 +140,7 @@ const noteful = (function () {
 
       const noteId = getNoteIdFromElement(event.currentTarget);
 
-      api.details(`/v3/notes/${noteId}`)
+      api.details(`/api/notes/${noteId}`)
         .then((response) => {
           store.currentNote = response;
           render();
@@ -155,7 +155,7 @@ const noteful = (function () {
 
       store.currentQuery.searchTerm = $(event.currentTarget).find('input').val();
 
-      api.search('/v3/notes', store.currentQuery)
+      api.search('/api/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
@@ -179,10 +179,10 @@ const noteful = (function () {
       };
 
       if (store.currentNote.id) {
-        api.update(`/v3/notes/${noteObj.id}`, noteObj)
+        api.update(`/api/notes/${noteObj.id}`, noteObj)
           .then(updateResponse => {
             store.currentNote = updateResponse;
-            return api.search('/v3/notes', store.currentQuery);
+            return api.search('/api/notes', store.currentQuery);
           })
           .then(response => {
             store.notes = response;
@@ -190,10 +190,10 @@ const noteful = (function () {
           })
           .catch(handleErrors);
       } else {
-        api.create('/v3/notes', noteObj)
+        api.create('/api/notes', noteObj)
           .then(createResponse => {
             store.currentNote = createResponse;
-            return api.search('/v3/notes', store.currentQuery);
+            return api.search('/api/notes', store.currentQuery);
           })
           .then(response => {
             store.notes = response;
@@ -217,12 +217,12 @@ const noteful = (function () {
       event.preventDefault();
       const noteId = getNoteIdFromElement(event.currentTarget);
 
-      api.remove(`/v3/notes/${noteId}`)
+      api.remove(`/api/notes/${noteId}`)
         .then(() => {
           if (noteId === store.currentNote.id) {
             store.currentNote = {};
           }
-          return api.search('/v3/notes', store.currentQuery);
+          return api.search('/api/notes', store.currentQuery);
         })
         .then(response => {
           store.notes = response;
@@ -245,7 +245,7 @@ const noteful = (function () {
         store.currentNote = {};
       }
 
-      api.search('/v3/notes', store.currentQuery)
+      api.search('/api/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
@@ -259,10 +259,10 @@ const noteful = (function () {
       event.preventDefault();
 
       const newFolderName = $('.js-new-folder-entry').val();
-      api.create('/v3/folders', { name: newFolderName })
+      api.create('/api/folders', { name: newFolderName })
         .then(() => {
           $('.js-new-folder-entry').val();
-          return api.search('/v3/folders');
+          return api.search('/api/folders');
         })
         .then(response => {
           store.folders = response;
@@ -284,10 +284,10 @@ const noteful = (function () {
         store.currentNote = {};
       }
 
-      api.remove(`/v3/folders/${folderId}`)
+      api.remove(`/api/folders/${folderId}`)
         .then(() => {
-          const notesPromise = api.search('/v3/notes');
-          const folderPromise = api.search('/v3/folders');
+          const notesPromise = api.search('/api/notes');
+          const folderPromise = api.search('/api/folders');
           return Promise.all([notesPromise, folderPromise]);
         })
         .then(([notes, folders]) => {
@@ -311,7 +311,7 @@ const noteful = (function () {
 
       store.currentNote = {};
 
-      api.search('/v3/notes', store.currentQuery)
+      api.search('/api/notes', store.currentQuery)
         .then(response => {
           store.notes = response;
           render();
@@ -325,9 +325,9 @@ const noteful = (function () {
       event.preventDefault();
 
       const newTagName = $('.js-new-tag-entry').val();
-      api.create('/v3/tags', { name: newTagName })
+      api.create('/api/tags', { name: newTagName })
         .then(() => {
-          return api.search('/v3/tags');
+          return api.search('/api/tags');
         })
         .then(response => {
           store.tags = response;
@@ -348,13 +348,13 @@ const noteful = (function () {
 
       store.currentNote = {};
 
-      api.remove(`/v3/tags/${tagId}`)
+      api.remove(`/api/tags/${tagId}`)
         .then(() => {
-          return api.search('/v3/tags');
+          return api.search('/api/tags');
         })
         .then(response => {
           store.tags = response;
-          return api.search('/v3/notes', store.currentQuery);
+          return api.search('/api/notes', store.currentQuery);
         })
         .then(response => {
           store.notes = response;
@@ -375,7 +375,7 @@ const noteful = (function () {
         password: signupForm.find('.js-password-entry').val()
       };
 
-      api.create('/v3/users', newUser)
+      api.create('/api/users', newUser)
         .then(response => {
           signupForm[0].reset();
           showSuccessMessage(`Thank you, ${response.fullname || response.username} for signing up!`);
@@ -394,7 +394,7 @@ const noteful = (function () {
         password: loginForm.find('.js-password-entry').val()
       };
 
-      api.create('/v3/login', loginUser)
+      api.create('/api/login', loginUser)
         .then(response => {
           store.authorized = true;
           loginForm[0].reset();
@@ -402,9 +402,9 @@ const noteful = (function () {
           store.currentUser = response;
 
           return Promise.all([
-            api.search('/v3/notes'),
-            api.search('/v3/folders'),
-            api.search('/v3/tags')
+            api.search('/api/notes'),
+            api.search('/api/folders'),
+            api.search('/api/tags')
           ]);
         })
         .then(([notes, folders, tags]) => {

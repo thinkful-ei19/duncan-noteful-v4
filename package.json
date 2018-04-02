@@ -13,9 +13,12 @@
 		"test": "cross-env NODE_ENV=test mocha --exit"
 	},
 	"dependencies": {
+		"bcryptjs": "^2.4.3",
 		"express": "^4.16.2",
 		"mongoose": "^5.0.6",
-		"morgan": "^1.9.0"
+		"morgan": "^1.9.0",
+		"passport": "^0.4.0",
+		"passport-local": "^1.0.0"
 	},
 	"devDependencies": {
 		"chai": "^4.1.2",

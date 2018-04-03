@@ -1,5 +1,6 @@
 'use strict';
 
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
@@ -14,6 +15,7 @@ const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 
 const localAuth = require('./passport/local');
+const jwtStrategy = require('./passport/jwt');
 
 // Create an Express application
 const app = express();
@@ -30,13 +32,18 @@ app.use(express.static('public'));
 app.use(express.json());
 
 passport.use(localAuth);
+passport.use(jwtStrategy);
+
+app.use('/api', usersRouter);
+app.use('/api', authRouter);
+
+app.use(passport.authenticate('jwt', { session: false, failWithError: true }));
 
 // Mount routers
 app.use('/api', notesRouter);
 app.use('/api', foldersRouter);
 app.use('/api', tagsRouter);
-app.use('/api', usersRouter);
-app.use('/api', authRouter);
+
 
 
 // Catch-all 404

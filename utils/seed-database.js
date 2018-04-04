@@ -3,17 +3,21 @@
 const mongoose = require('mongoose');
 
 const { MONGODB_URI } = require('../config');
+const User = require('../models/user');
 const Note = require('../models/note');
 const Folder = require('../models/folder');
 const Tag = require('../models/tag');
 
+
 const seedNotes = require('../db/seed/notes');
 const seedFolders = require('../db/seed/folders');
+const seedUsers = require('../db/seed/users');
 
 mongoose.connect(MONGODB_URI)
   .then(() => mongoose.connection.db.dropDatabase())
   .then(() => {
     return Promise.all([
+      User.insertMany(seedUsers),
       Note.insertMany(seedNotes),
       Folder.insertMany(seedFolders),
       Folder.createIndexes(),

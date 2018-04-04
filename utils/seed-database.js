@@ -18,13 +18,13 @@ mongoose.connect(MONGODB_URI)
   .then(() => mongoose.connection.db.dropDatabase())
   .then(() => {
     return Promise.all([
+      User.insertMany(seedUsers),
+      User.createIndexes(),
       Note.insertMany(seedNotes),
       Folder.insertMany(seedFolders),
       Folder.createIndexes(),
       Tag.insertMany(seedTags),
-      Tag.createIndexes(),
-      User.insertMany(seedUsers),
-      User.createIndexes()
+      Tag.createIndexes()
     ]);
   })
   .then(() => mongoose.disconnect())

@@ -6,6 +6,32 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const Note = require('../models/note');
+const Folder = require('../models/folder');
+const Tag = require('../models/tag');
+
+const validateTags = function(userId, tags = []) {
+  if (!tags.length) {
+    return Promise.resolve();
+  }
+  return Tag.find({ $and: [{ _id: { $in: tags }, userId }] })
+    .then(results => {
+      if (tags.length !== results.length) {
+        return Promise.reject('InvalidTag');
+      }
+    });
+};
+
+const validateFolders = function(userId, folderId) {
+  if (!folderId) {
+    return Promise.resolve();
+  }
+  return Folder.findOne({_id : folderId, userId})
+    .then(folder => {
+      if (!folder) {
+        return Promise.reject('InvalidFolder');
+      }
+    });
+};
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/notes', (req, res, next) => {
@@ -83,22 +109,80 @@ router.post('/notes', (req, res, next) => {
   if (tags) {
     tags.forEach((tag) => {
       if (!mongoose.Types.ObjectId.isValid(tag)) {
-        const err = new Error('The `id` is not valid');
+        const err = new Error('The `tag id` is not valid');
         err.status = 400;
         return next(err);
       }
     });
   }
 
+  if (folderId) {
+    if (!mongoose.Types.ObjectId.isValid(folderId)) {
+      const err = new Error('The `folder id` is not valid');
+      err.status = 400;
+      return next(err);
+    }
+  }
+
   const newItem = { title, content, folderId, tags, userId };
 
-  Note.create(newItem)
+  const foldersPromise = validateFolders(userId, folderId);
+  const tagsPromise = validateTags(userId, tags);
+
+  Promise.all([foldersPromise, tagsPromise])
+    .then(() => {
+      return Note.create(newItem);
+    })
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
     })
     .catch(err => {
+      if (err === 'InvalidFolder') {
+        err = new Error('The folder is not valid');
+        err.status = 400;
+      }
+      if (err === 'InvalidTag') {
+        err = new Error('The tag is not valid');
+        err.status = 400;
+      }
       next(err);
     });
+
+
+
+  // My solution
+  // const foldersPromise = Folder.find({ _id : folderId, userId});
+  // const tagsPromise = Tag.find({userId});
+
+  // Promise.all([foldersPromise,tagsPromise])
+  //   .then(([folder, tag]) => {
+  //     if (folderId) {
+  //       if (!folder[0]) {
+  //         const err = new Error('The item is not valid');
+  //         err.status = 400;
+  //         return next(err);
+  //       }
+  //     }
+  //     if (tags) {
+  //       const validTags = tag.map(item => item.id);
+  //       tags.forEach(item => {
+  //         if (!validTags.includes(item)) {
+  //           const err = new Error('The item is not valid');
+  //           err.status = 400;
+  //           return next(err);
+  //         }
+  //       });
+  //     } 
+  //     return Note.create(newItem);
+  //   })
+  //   .then(result => {
+  //     res.location(`${req.originalUrl}/${result.id}`).status(201).json(result);
+  //   })
+  //   .catch(err => {
+  //     next(err);
+  //   });
+
+
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
@@ -137,8 +221,13 @@ router.put('/notes/:id', (req, res, next) => {
   
   const options = { new: true };
 
-  Note.findOneAndUpdate({_id : id, userId}, updateItem, options)
-    .populate('tags')
+  const foldersPromise = validateFolders(userId, folderId);
+  const tagsPromise = validateTags(userId, tags);
+
+  Promise.all([foldersPromise, tagsPromise])
+    .then(() => {
+      return Note.findOneAndUpdate({_id : id, userId}, updateItem, options).populate('tags');
+    })
     .then(result => {
       if (result) {
         res.json(result);
@@ -147,6 +236,14 @@ router.put('/notes/:id', (req, res, next) => {
       }
     })
     .catch(err => {
+      if (err === 'InvalidFolder') {
+        err = new Error('The folder is not valid');
+        err.status = 400;
+      }
+      if (err === 'InvalidTag') {
+        err = new Error('The tag is not valid');
+        err.status = 400;
+      }
       next(err);
     });
 });

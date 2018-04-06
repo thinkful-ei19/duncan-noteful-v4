@@ -14,7 +14,7 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe.only('Noteful API - Users', function () {
+describe('Noteful API - Users', function () {
   const username = 'exampleUser';
   const password = 'examplePass';
   const fullName = 'Example User';
@@ -167,7 +167,6 @@ describe.only('Noteful API - Users', function () {
           })
           .catch(err => err.response)
           .then(res => {
-            console.log(res.status);
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('The username already exists');
           });
@@ -179,11 +178,6 @@ describe.only('Noteful API - Users', function () {
           .then(res => {
             expect(res).to.have.status(201);
             expect(res.body).to.be.an('object');
-            expect(res.body).to.have.keys(
-              'username',
-              'fullName',
-              'id'
-            );
             expect(res.body.fullName).to.equal(fullName);
             return User.findOne({
               username

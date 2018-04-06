@@ -42,7 +42,7 @@ describe('Basic Express setup', () => {
     });
     describe('401 handler', () => {
 
-      it('should respond with 401 when given a bad path', () => {
+      it('should respond with 401 when given a bad path ', () => {
         return chai.request(app)
           .get('/bad/path')
           .catch(err => err.response)
